@@ -1,9 +1,12 @@
-import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_gemini_demo/viewmodel/gemini_chat_viewmodel.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gemeini_chat/viewmodel/gemini_chat_viewmodel.dart';
 import 'package:markdown_widget/widget/markdown_block.dart';
+import 'package:path/path.dart' as p;
 
 final geminiChatViewModelProvider =
     ChangeNotifierProvider((ref) => GeminiChatViewModel());
@@ -66,19 +69,28 @@ class GeminiChatView extends ConsumerWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      if (item['promptImage'] != null)
-                                        Image.memory(
-                                            base64Decode(item['promptImage'])),
-                                      MarkdownBlock(data: item['prompt']),
+                                      if (item['promptImageId'] != null)
+                                        ConstrainedBox(
+                                          constraints: BoxConstraints.loose(
+                                              Size(1.sw, .75.sh)),
+                                          child: Image.file(
+                                            File(p.join(viewModel.imageDir,
+                                                item['promptImageId'])),
+                                            fit: BoxFit.scaleDown,
+                                          ),
+                                        ),
+                                      SelectableText(item['prompt']),
                                     ],
                                   ),
                                 ),
-                                ListTile(
-                                  title:
-                                      const MarkdownBlock(data: "###  Gemini"),
-                                  subtitle:
-                                      MarkdownBlock(data: item['response']),
-                                ),
+                                if (item['response'] != null)
+                                  ListTile(
+                                    title: const MarkdownBlock(
+                                        data: "###  Gemini"),
+                                    subtitle: MarkdownBlock(
+                                        data: item['response'] ?? ""),
+                                  ),
+                                12.verticalSpace,
                               ],
                             ),
                         ].reversed.toList()));

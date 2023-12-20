@@ -1,25 +1,26 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gemeini_chat/constant.dart';
 import 'package:google_gemini/google_gemini.dart';
-import 'package:google_gemini_demo/constant.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class GeminiChatViewModel extends ChangeNotifier {
   init() async {
-    collection = await BoxCollection.open(
-      'AppDB',
-      {'chatLog'},
-      path: (await getApplicationDocumentsDirectory()).path,
-    );
+    applicationDocumentsDirectory =
+        (await getApplicationDocumentsDirectory()).path;
+    imageDir = p.join(applicationDocumentsDirectory, "imgs");
+    await Directory(imageDir).create();
+    collection = await BoxCollection.open('AppDB', {'chatLog'},
+        path: applicationDocumentsDirectory);
     chatlog = await collection.openBox<Map>('chatLog');
     chatList = (await chatlog.getAllValues()).values.toList();
+
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   GeminiChatViewModel() {
@@ -32,6 +33,8 @@ class GeminiChatViewModel extends ChangeNotifier {
   File? imageFile;
   List? chatList;
   bool isLoading = false;
+  late String applicationDocumentsDirectory;
+  late String imageDir;
 
   Future pickImage() async {
     try {
@@ -68,11 +71,18 @@ class GeminiChatViewModel extends ChangeNotifier {
   }
 
   sendPrompt(context) async {
+    //4194304
+    log((await imageFile?.length()).toString());
+
     if (!isLoading) {
       promptContoller.text = promptContoller.text.trim();
       if (promptContoller.text.isEmpty && imageFile == null) return;
       final prompt = promptContoller.text;
+
+      String promptImageId = DateTime.now().microsecondsSinceEpoch.toString();
       File? promptImage = imageFile;
+      await imageFile?.copy(p.join(imageDir, promptImageId));
+
       promptContoller.clear();
       imageFile = null;
 
@@ -82,11 +92,9 @@ class GeminiChatViewModel extends ChangeNotifier {
         final chatId = DateTime.now().millisecondsSinceEpoch.toString();
         await chatlog.put(chatId, {
           "prompt": prompt,
-          "promptImage": promptImage == null
-              ? null
-              : base64Encode(promptImage.readAsBytesSync()),
-          "response": ""
+          "promptImageId": promptImage == null ? null : promptImageId,
         });
+
         chatList = (await chatlog.getAllValues()).values.toList();
         notifyListeners();
         final geminiResponse = promptImage == null
@@ -98,9 +106,7 @@ class GeminiChatViewModel extends ChangeNotifier {
         notifyListeners();
         await chatlog.put(chatId, {
           "prompt": prompt,
-          "promptImage": promptImage == null
-              ? null
-              : base64Encode(promptImage.readAsBytesSync()),
+          "promptImageId": promptImage == null ? null : promptImageId,
           "response": geminiResponse.text
         });
         chatList = (await chatlog.getAllValues()).values.toList();

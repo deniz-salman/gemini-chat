@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_gemini_demo/view/geminin_chat_view.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gemeini_chat/view/geminin_chat_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SharedPreferences sharedPrefences;
@@ -16,11 +17,13 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: MaterialApp(
-        title: 'Gemini Chat',
-        theme: ThemeData(primarySwatch: Colors.blueGrey),
-        home: const GeminiChatView(),
+    return ScreenUtilInit(
+      child: ProviderScope(
+        child: MaterialApp(
+          title: 'Gemini Chat',
+          theme: ThemeData(primarySwatch: Colors.blueGrey),
+          home: const GeminiChatView(),
+        ),
       ),
     );
   }
