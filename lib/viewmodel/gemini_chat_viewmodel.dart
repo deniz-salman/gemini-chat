@@ -2,8 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gemeini_chat/constant.dart';
-import 'package:google_gemini/google_gemini.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,7 +27,7 @@ class GeminiChatViewModel extends ChangeNotifier {
   }
   late BoxCollection collection;
   late CollectionBox chatlog;
-  final gemini = GoogleGemini(apiKey: geminiApiKey);
+  final gemini = Gemini.instance;
   final promptContoller = TextEditingController();
   File? imageFile;
   List? chatList;
@@ -98,16 +97,17 @@ class GeminiChatViewModel extends ChangeNotifier {
         chatList = (await chatlog.getAllValues()).values.toList();
         notifyListeners();
         final geminiResponse = promptImage == null
-            ? await gemini.generateFromText(prompt)
-            : await gemini.generateFromTextAndImages(
-                query: prompt, image: promptImage);
-
+            ? await gemini.text(prompt)
+            : await gemini.textAndImage(
+                text: prompt,
+                images: [promptImage.readAsBytesSync()],
+              );
         isLoading = false;
         notifyListeners();
         await chatlog.put(chatId, {
           "prompt": prompt,
           "promptImageId": promptImage == null ? null : promptImageId,
-          "response": geminiResponse.text
+          "response": geminiResponse?.content?.parts?.first.text.toString()
         });
         chatList = (await chatlog.getAllValues()).values.toList();
         notifyListeners();
