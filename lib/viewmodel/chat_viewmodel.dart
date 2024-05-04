@@ -4,37 +4,37 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gemeini_chat/constant.dart';
+import 'package:gemeini_chat/main.dart';
+import 'package:gemeini_chat/model/chat.dart';
+import 'package:gemeini_chat/model/message.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-class GeminiChatViewModel extends ChangeNotifier {
+class ChatViewModel extends ChangeNotifier {
   init() async {
     applicationDocumentsDirectory =
         (await getApplicationDocumentsDirectory()).path;
     imageDir = p.join(applicationDocumentsDirectory, "imgs");
     await Directory(imageDir).create();
-    collection = await BoxCollection.open('AppDB', {'chatLog'},
-        path: applicationDocumentsDirectory);
-    chatlog = await collection.openBox<Map>('chatLog');
-    updateChatList();
-    notifyListeners();
+    updateMessages();
+
+    messagesBox.listenable().addListener(() => updateMessages());
   }
 
-  GeminiChatViewModel() {
+  ChatViewModel() {
     init();
   }
-  late BoxCollection collection;
-  late CollectionBox chatlog;
   final promptTextField = TextEditingController();
   File? imageFile;
-  List? chatList;
   bool isLoading = false;
   late String applicationDocumentsDirectory;
   late String imageDir;
   late CancelableOperation geminiRequest;
+  List messageList = <Message>[];
+  int? currentChatId;
 
   pickImage() async {
     try {
@@ -47,13 +47,23 @@ class GeminiChatViewModel extends ChangeNotifier {
     }
   }
 
+  updateMessages() {
+    messageList = messagesBox.values
+        .toList()
+        .cast<Message>()
+        .where((element) => element.chatId == currentChatId)
+        .toList();
+    notifyListeners();
+  }
+
   removeImage() {
     imageFile = null;
     notifyListeners();
   }
 
-  updateChatList() async {
-    chatList = (await chatlog.getAllValues()).values.toList();
+  changeChat(int? id) {
+    currentChatId = id;
+    updateMessages();
     notifyListeners();
   }
 
@@ -74,12 +84,15 @@ class GeminiChatViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
       final chatId = DateTime.now().millisecondsSinceEpoch.toString();
-      await chatlog.put(chatId, {
-        "prompt": prompt,
-        "promptImageId": promptImage == null ? null : promptImageId,
-      });
 
-      updateChatList();
+      currentChatId ??= await chatsBox.add(Chat()..createdAt = DateTime.now());
+      notifyListeners();
+
+      final messageId = await messagesBox.add(Message()
+        ..prompt = prompt
+        ..promptImageId = promptImage == null ? null : promptImageId
+        ..chatId = currentChatId!
+        ..createdAt = DateTime.now());
 
       final isImageNull = promptImage == null;
       final model = GenerativeModel(
@@ -99,7 +112,6 @@ class GeminiChatViewModel extends ChangeNotifier {
                 .then((reponse) => geminiResponse = reponse);
 
         notifyListeners();
-        updateChatList();
         await geminiRequest.valueOrCancellation();
       } catch (e) {
         isLoading = false;
@@ -111,17 +123,19 @@ class GeminiChatViewModel extends ChangeNotifier {
       if (geminiRequest.isCanceled ||
           !geminiRequest.isCompleted ||
           geminiResponse?.text == null) {
-        await chatlog.delete((await chatlog.getAllValues()).keys.last);
+        await messagesBox.delete(chatId);
       } else {
-        await chatlog.put((await chatlog.getAllValues()).keys.last, {
-          "prompt": prompt,
-          "promptImageId": promptImage == null ? null : promptImageId,
-          "response": geminiResponse?.text
-        });
+        await messagesBox.put(
+            messageId,
+            Message()
+              ..prompt = prompt
+              ..promptImageId = promptImage == null ? null : promptImageId
+              ..response = geminiResponse?.text
+              ..chatId = currentChatId!
+              ..createdAt = DateTime.now());
       }
       isLoading = false;
       notifyListeners();
-      updateChatList();
     }
   }
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gemeini_chat/view/geminin_chat_view.dart';
+import 'package:gemeini_chat/view/chat_view.dart';
 
 class ImageView extends ConsumerWidget {
   const ImageView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(geminiChatViewModelProvider);
+    final viewModel = ref.watch(chatViewModelProvider);
     return Container(
       color: Colors.black,
       child: Stack(
