@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gemeini_chat/constant.dart';
 import 'package:gemeini_chat/view/geminin_chat_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,7 +9,6 @@ late SharedPreferences sharedPrefences;
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   sharedPrefences = await SharedPreferences.getInstance();
-  Gemini.init(apiKey: geminiApiKey);
   runApp(const App());
 }
 

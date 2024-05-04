@@ -1,8 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:gemeini_chat/constant.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,8 +19,7 @@ class GeminiChatViewModel extends ChangeNotifier {
     collection = await BoxCollection.open('AppDB', {'chatLog'},
         path: applicationDocumentsDirectory);
     chatlog = await collection.openBox<Map>('chatLog');
-    chatList = (await chatlog.getAllValues()).values.toList();
-
+    updateChatList();
     notifyListeners();
   }
 
@@ -27,13 +28,13 @@ class GeminiChatViewModel extends ChangeNotifier {
   }
   late BoxCollection collection;
   late CollectionBox chatlog;
-  final gemini = Gemini.instance;
   final promptContoller = TextEditingController();
   File? imageFile;
   List? chatList;
   bool isLoading = false;
   late String applicationDocumentsDirectory;
   late String imageDir;
+  late CancelableOperation geminiRequest;
 
   Future pickImage() async {
     try {
@@ -44,6 +45,11 @@ class GeminiChatViewModel extends ChangeNotifier {
     } on PlatformException catch (e) {
       log('Failed to pick image: $e');
     }
+  }
+
+  updateChatList() async {
+    chatList = (await chatlog.getAllValues()).values.toList();
+    notifyListeners();
   }
 
   removeImage() {
@@ -70,7 +76,6 @@ class GeminiChatViewModel extends ChangeNotifier {
   }
 
   sendPrompt(context) async {
-    //4194304
     log((await imageFile?.length()).toString());
 
     if (!isLoading) {
@@ -85,38 +90,58 @@ class GeminiChatViewModel extends ChangeNotifier {
       promptContoller.clear();
       imageFile = null;
 
-      try {
-        isLoading = true;
-        notifyListeners();
-        final chatId = DateTime.now().millisecondsSinceEpoch.toString();
-        await chatlog.put(chatId, {
-          "prompt": prompt,
-          "promptImageId": promptImage == null ? null : promptImageId,
-        });
+      GenerateContentResponse? geminiResponse;
+      isLoading = true;
+      notifyListeners();
+      final chatId = DateTime.now().millisecondsSinceEpoch.toString();
+      await chatlog.put(chatId, {
+        "prompt": prompt,
+        "promptImageId": promptImage == null ? null : promptImageId,
+      });
 
-        chatList = (await chatlog.getAllValues()).values.toList();
+      updateChatList();
+
+      final isImageNull = promptImage == null;
+      final model = GenerativeModel(
+          model: isImageNull ? 'gemini-pro' : 'gemini-pro-vision',
+          apiKey: geminiApiKey);
+
+      final content = [
+        Content.multi([
+          TextPart(prompt),
+          if (!isImageNull)
+            DataPart('image/png', await promptImage.readAsBytes()),
+        ])
+      ];
+      try {
+        geminiRequest =
+            CancelableOperation.fromFuture(model.generateContent(content))
+                .then((value) => geminiResponse = value);
+
         notifyListeners();
-        final geminiResponse = promptImage == null
-            ? await gemini.text(prompt)
-            : await gemini.textAndImage(
-                text: prompt,
-                images: [promptImage.readAsBytesSync()],
-              );
-        isLoading = false;
-        notifyListeners();
-        await chatlog.put(chatId, {
-          "prompt": prompt,
-          "promptImageId": promptImage == null ? null : promptImageId,
-          "response": geminiResponse?.content?.parts?.first.text.toString()
-        });
-        chatList = (await chatlog.getAllValues()).values.toList();
-        notifyListeners();
+        updateChatList();
       } catch (e) {
         isLoading = false;
         notifyListeners();
         log(e.toString());
         showErrorMessage(context, e.toString());
       }
+
+      await geminiRequest.valueOrCancellation();
+      if (geminiRequest.isCanceled ||
+          !geminiRequest.isCompleted ||
+          geminiResponse?.text == null) {
+        await chatlog.delete((await chatlog.getAllValues()).keys.last);
+      } else {
+        await chatlog.put((await chatlog.getAllValues()).keys.last, {
+          "prompt": prompt,
+          "promptImageId": promptImage == null ? null : promptImageId,
+          "response": geminiResponse?.text
+        });
+      }
+      isLoading = false;
+      notifyListeners();
+      updateChatList();
     }
   }
 }

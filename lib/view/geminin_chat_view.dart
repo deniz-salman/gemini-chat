@@ -134,9 +134,19 @@ class GeminiChatView extends ConsumerWidget {
     );
 
     final sendButton = viewModel.isLoading
-        ? const Padding(
-            padding: EdgeInsets.all(8),
-            child: CircularProgressIndicator(),
+        ? Stack(
+            alignment: Alignment.center,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(),
+              ),
+              IconButton(
+                  onPressed: () {
+                    viewModel.geminiRequest.cancel();
+                  },
+                  icon: const Icon(Icons.stop))
+            ],
           )
         : IconButton(
             icon: const Icon(Icons.send),
