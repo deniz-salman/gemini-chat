@@ -28,7 +28,7 @@ class GeminiChatViewModel extends ChangeNotifier {
   }
   late BoxCollection collection;
   late CollectionBox chatlog;
-  final promptContoller = TextEditingController();
+  final promptTextField = TextEditingController();
   File? imageFile;
   List? chatList;
   bool isLoading = false;
@@ -36,7 +36,7 @@ class GeminiChatViewModel extends ChangeNotifier {
   late String imageDir;
   late CancelableOperation geminiRequest;
 
-  Future pickImage() async {
+  pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (image == null) return;
@@ -47,47 +47,27 @@ class GeminiChatViewModel extends ChangeNotifier {
     }
   }
 
-  updateChatList() async {
-    chatList = (await chatlog.getAllValues()).values.toList();
-    notifyListeners();
-  }
-
   removeImage() {
     imageFile = null;
     notifyListeners();
   }
 
-  showErrorMessage(BuildContext context, String message) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Error"),
-            content: Text(message),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text("OK"))
-            ],
-          );
-        });
+  updateChatList() async {
+    chatList = (await chatlog.getAllValues()).values.toList();
+    notifyListeners();
   }
 
   sendPrompt(context) async {
-    log((await imageFile?.length()).toString());
-
     if (!isLoading) {
-      promptContoller.text = promptContoller.text.trim();
-      if (promptContoller.text.isEmpty && imageFile == null) return;
-      final prompt = promptContoller.text;
+      promptTextField.text = promptTextField.text.trim();
+      if (promptTextField.text.isEmpty && imageFile == null) return;
+      final prompt = promptTextField.text;
 
       String promptImageId = DateTime.now().microsecondsSinceEpoch.toString();
       File? promptImage = imageFile;
       await imageFile?.copy(p.join(imageDir, promptImageId));
 
-      promptContoller.clear();
+      promptTextField.clear();
       imageFile = null;
 
       GenerateContentResponse? geminiResponse;
@@ -120,6 +100,7 @@ class GeminiChatViewModel extends ChangeNotifier {
 
         notifyListeners();
         updateChatList();
+        await geminiRequest.valueOrCancellation();
       } catch (e) {
         isLoading = false;
         notifyListeners();
@@ -127,7 +108,6 @@ class GeminiChatViewModel extends ChangeNotifier {
         showErrorMessage(context, e.toString());
       }
 
-      await geminiRequest.valueOrCancellation();
       if (geminiRequest.isCanceled ||
           !geminiRequest.isCompleted ||
           geminiResponse?.text == null) {
@@ -143,5 +123,23 @@ class GeminiChatViewModel extends ChangeNotifier {
       notifyListeners();
       updateChatList();
     }
+  }
+
+  showErrorMessage(BuildContext context, String message) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Error"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("OK"))
+            ],
+          );
+        });
   }
 }
