@@ -116,7 +116,7 @@ class GeminiChatViewModel extends ChangeNotifier {
       try {
         geminiRequest =
             CancelableOperation.fromFuture(model.generateContent(content))
-                .then((value) => geminiResponse = value);
+                .then((reponse) => geminiResponse = reponse);
 
         notifyListeners();
         updateChatList();

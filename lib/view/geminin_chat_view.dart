@@ -142,9 +142,7 @@ class GeminiChatView extends ConsumerWidget {
                 child: CircularProgressIndicator(),
               ),
               IconButton(
-                  onPressed: () {
-                    viewModel.geminiRequest.cancel();
-                  },
+                  onPressed: () => viewModel.geminiRequest.cancel(),
                   icon: const Icon(Icons.stop))
             ],
           )
