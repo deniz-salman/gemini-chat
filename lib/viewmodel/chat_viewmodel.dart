@@ -99,13 +99,21 @@ class ChatViewModel extends ChangeNotifier {
           model: isImageNull ? 'gemini-pro' : 'gemini-pro-vision',
           apiKey: geminiApiKey);
 
-      final content = [
-        Content.multi([
-          TextPart(prompt),
-          if (!isImageNull)
-            DataPart('image/png', await promptImage.readAsBytes()),
-        ])
-      ];
+      final List<Content> content = isImageNull
+          ? [
+              for (var message in messageList) ...[
+                Content("user", [TextPart(message.prompt)]),
+                if (message.response != null)
+                  Content("model", [TextPart(message.response)]),
+              ]
+            ]
+          : [
+              Content.multi([
+                TextPart(prompt),
+                if (!isImageNull)
+                  DataPart('image/png', await promptImage.readAsBytes()),
+              ])
+            ];
       try {
         geminiRequest =
             CancelableOperation.fromFuture(model.generateContent(content))
@@ -115,6 +123,7 @@ class ChatViewModel extends ChangeNotifier {
         await geminiRequest.valueOrCancellation();
       } catch (e) {
         isLoading = false;
+        await messagesBox.delete(chatId);
         notifyListeners();
         log(e.toString());
         showErrorMessage(context, e.toString());
