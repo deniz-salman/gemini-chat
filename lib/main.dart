@@ -1,3 +1,5 @@
+
+import 'package:desktop_window/desktop_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,12 +13,21 @@ late Box<Message> messagesBox;
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  await hiveInit();
+  await setDesktopConfig();
+  runApp(const App());
+}
+
+hiveInit() async {
   await Hive.initFlutter();
   Hive.registerAdapter(ChatAdapter());
   Hive.registerAdapter(MessageAdapter());
   chatsBox = await Hive.openBox<Chat>('chats');
   messagesBox = await Hive.openBox<Message>('messages');
-  runApp(const App());
+}
+
+setDesktopConfig() async {
+  await DesktopWindow.setMinWindowSize(const Size(800, 600));
 }
 
 class App extends StatelessWidget {
