@@ -60,7 +60,9 @@ class ChatsView extends ConsumerWidget {
                     trailing: IconButton(
                       onPressed: () {
                         chatListViewModel.deleteChat(id);
-                        chatViewModel.changeChat(null);
+                        if (chatViewModel.currentChatId == id) {
+                          chatViewModel.changeChat(null);
+                        }
                       },
                       icon: const Icon(Icons.delete),
                     ),
