@@ -1,6 +1,9 @@
+import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gemeini_chat/view/chat_list_view.dart';
@@ -27,21 +30,32 @@ class ChatView extends ConsumerWidget {
 
     final messageField = Expanded(
       child: TextField(
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          hintText: 'Message Gemini...',
-        ),
-        keyboardType: TextInputType.multiline,
-        controller: viewModel.promptTextField,
-        onSubmitted: (value) {
-          viewModel.sendPrompt(context);
-        },
-        onTapOutside: (PointerDownEvent evt) {
-          FocusScope.of(context).requestFocus(FocusNode());
-        },
-        maxLines: 10,
-        minLines: 1,
-      ),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Message Gemini...',
+          ),
+          keyboardType: TextInputType.multiline,
+          controller: viewModel.promptTextField,
+          onSubmitted: (value) {
+            viewModel.sendPrompt(context);
+          },
+          onTapOutside: (PointerDownEvent evt) {
+            FocusScope.of(context).requestFocus(FocusNode());
+          },
+          maxLines: 10,
+          minLines: 1,
+          focusNode: FocusNode(
+            onKey: (FocusNode node, RawKeyEvent evt) {
+              if (!evt.isShiftPressed && evt.logicalKey.keyLabel == 'Enter') {
+                if (evt is RawKeyDownEvent) {
+                  viewModel.sendPrompt(context);
+                }
+                return KeyEventResult.handled;
+              } else {
+                return KeyEventResult.ignored;
+              }
+            },
+          )),
     );
 
     final sendButton = viewModel.isLoading
