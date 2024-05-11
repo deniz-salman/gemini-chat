@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:desktop_window/desktop_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +29,9 @@ hiveInit() async {
 }
 
 setDesktopConfig() async {
+  if(!(Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
+    return;
+  }
   await DesktopWindow.setMinWindowSize(const Size(800, 600));
 }
 
