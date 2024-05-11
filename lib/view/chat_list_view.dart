@@ -47,7 +47,7 @@ class ChatsView extends ConsumerWidget {
             child: ListView(
               shrinkWrap: true,
               children: [
-                for (var id in chatListViewModel.chatListKeys)
+                for (var id in chatListViewModel.chatListKeys.reversed)
                   ListTile(
                     title: Text("Chat $id"),
                     selected: chatViewModel.currentChatId == id,
