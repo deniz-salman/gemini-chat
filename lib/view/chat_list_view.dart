@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gemeini_chat/subview/drawer_menu_button.dart';
 import 'package:gemeini_chat/view/chat_view.dart';
 import 'package:gemeini_chat/viewmodel/chat_list_viewmodel.dart';
 
@@ -19,7 +20,9 @@ class ChatsView extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextButton(
+          DrawerMenuButton(
+            icon: Icons.add,
+            text: "Add New Chat",
             onPressed: () async {
               if (chatViewModel.currentChatId == null) {
                 Navigator.pop(context);
@@ -28,18 +31,6 @@ class ChatsView extends ConsumerWidget {
               chatViewModel.changeChat(null);
               Navigator.pop(context);
             },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  "Add New Chat",
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.deepPurple,
-                      ),
-                ),
-                const Icon(Icons.add)
-              ],
-            ),
           ),
           const Divider(),
           Expanded(
