@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gemeini_chat/constant.dart';
 import 'package:gemeini_chat/main.dart';
 import 'package:gemeini_chat/model/chat.dart';
 import 'package:gemeini_chat/model/message.dart';
+import 'package:gemeini_chat/view/settings_view.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:image_picker/image_picker.dart';
@@ -67,7 +67,26 @@ class ChatViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  checkApiKey(context) {
+    if (settingsBox.get('apiKey') == null || settingsBox.get('apiKey') == '') {
+      SnackBar snackBar = SnackBar(
+        content: const Text('Please set your API Key'),
+        action: SnackBarAction(
+          label: 'Set API Key',
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return const Settingsview();
+            }));
+          },
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+  }
+
   sendPrompt(context) async {
+    checkApiKey(context);
     if (!isLoading) {
       promptTextField.text = promptTextField.text.trim();
       if (promptTextField.text.isEmpty && imageFile == null) return;
@@ -97,7 +116,7 @@ class ChatViewModel extends ChangeNotifier {
       final isImageNull = promptImage == null;
       final model = GenerativeModel(
           model: isImageNull ? 'gemini-pro' : 'gemini-pro-vision',
-          apiKey: geminiApiKey);
+          apiKey: await settingsBox.get('apiKey'));
 
       final List<Content> content = isImageNull
           ? [

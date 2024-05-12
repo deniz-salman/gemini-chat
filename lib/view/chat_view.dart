@@ -1,7 +1,4 @@
-import 'dart:developer';
 import 'dart:io';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +7,6 @@ import 'package:gemeini_chat/view/chat_list_view.dart';
 import 'package:gemeini_chat/subview/image_view.dart';
 import 'package:gemeini_chat/viewmodel/chat_viewmodel.dart';
 import 'package:path/path.dart' as p;
-//impoert markdown package
 import 'package:markdown_widget/markdown_widget.dart';
 
 final chatViewModelProvider = ChangeNotifierProvider((ref) => ChatViewModel());

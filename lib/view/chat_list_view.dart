@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gemeini_chat/subview/drawer_menu_button.dart';
 import 'package:gemeini_chat/view/chat_view.dart';
+import 'package:gemeini_chat/view/settings_view.dart';
 import 'package:gemeini_chat/viewmodel/chat_list_viewmodel.dart';
 
 final chatListViewModelProvider =
@@ -61,6 +62,17 @@ class ChatsView extends ConsumerWidget {
               ],
             ),
           ),
+          const Divider(),
+          DrawerMenuButton(
+              icon: Icons.settings,
+              text: "Settings",
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const Settingsview()));
+              }),
         ],
       ),
     );

@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:desktop_window/desktop_window.dart';
@@ -12,6 +11,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 late Box<Chat> chatsBox;
 late Box<Message> messagesBox;
+late Box settingsBox;
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,10 +26,11 @@ hiveInit() async {
   Hive.registerAdapter(MessageAdapter());
   chatsBox = await Hive.openBox<Chat>('chats');
   messagesBox = await Hive.openBox<Message>('messages');
+  settingsBox = await Hive.openBox('settings');
 }
 
 setDesktopConfig() async {
-  if(!(Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
+  if (!(Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
     return;
   }
   await DesktopWindow.setMinWindowSize(const Size(800, 600));
