@@ -81,12 +81,16 @@ class ChatViewModel extends ChangeNotifier {
         ),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
+      return false;
     }
+    return true;
   }
 
   sendPrompt(context) async {
-    checkApiKey(context);
+    if (!checkApiKey(context)) {
+      return;
+    }
+
     if (!isLoading) {
       promptTextField.text = promptTextField.text.trim();
       if (promptTextField.text.isEmpty && imageFile == null) return;
