@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gemeini_chat/main.dart';
+import 'package:gemeini_chat/view/chat_view.dart';
+import 'package:gemeini_chat/viewmodel/chat_viewmodel.dart';
 import 'package:gemeini_chat/viewmodel/settings_viewmodel.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -18,6 +20,7 @@ class Settingsview extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final SettingsViewModel settingsViewModel =
         ref.watch(settingsViewModelProvider);
+    final ChatViewModel chatViewModel = ref.watch(chatViewModelProvider);
 
     Future<bool> apiKeyIsValid(BuildContext context) async {
       showDialog(
@@ -41,33 +44,76 @@ class Settingsview extends ConsumerWidget {
       });
     }
 
+    final apiKey = ListTile(
+        title: const Text('API Key'),
+        subtitle:
+            Text(settingsBox.get('apiKey', defaultValue: 'No API Key Set')),
+        onLongPress: () {
+          if (settingsBox.get('apiKey') == null) {
+            return;
+          }
+          Clipboard.setData(ClipboardData(text: settingsBox.get('apiKey')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('API Key copied to clipboard'),
+            ),
+          );
+        },
+        onTap: () =>
+            apiKeyEnterDialog(context, settingsViewModel, apiKeyIsValid));
+
+    final clearChat = ListTile(
+      enabled: chatsBox.isNotEmpty,
+      title: const Text('Clear all chat history'),
+      onTap: () {
+        clearChatDialog(context, settingsViewModel, chatViewModel);
+      },
+    );
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
       ),
       body: ListView(
         children: [
-          ListTile(
-              title: const Text('API Key'),
-              subtitle: Text(
-                  settingsBox.get('apiKey', defaultValue: 'No API Key Set')),
-              onLongPress: () {
-                if (settingsBox.get('apiKey') == null) {
-                  return;
-                }
-                Clipboard.setData(
-                    ClipboardData(text: settingsBox.get('apiKey')));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('API Key copied to clipboard'),
-                  ),
-                );
-              },
-              onTap: () =>
-                  apiKeyEnterDialog(context, settingsViewModel, apiKeyIsValid))
+          apiKey,
+          clearChat,
         ],
       ),
     );
+  }
+
+  Future<dynamic> clearChatDialog(BuildContext context, SettingsViewModel settingsViewModel, ChatViewModel chatViewModel) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Clear all chat history?'),
+            content: const Text(
+                'This will delete all chat history. Are you sure you want to continue?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  settingsViewModel.clearAllChat();
+                  chatViewModel.changeChat(null);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Chat history cleared'),
+                    ),
+                  );
+                },
+                child: const Text('Clear'),
+              ),
+            ],
+          );
+        },
+      );
   }
 
   Future<dynamic> apiKeyEnterDialog(

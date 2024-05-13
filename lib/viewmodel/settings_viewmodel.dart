@@ -26,4 +26,10 @@ class SettingsViewModel extends ChangeNotifier {
     await settingsBox.put('apiKey', apiKeyController.text.trim());
     notifyListeners();
   }
+
+  clearAllChat() {
+    chatsBox.clear();
+    messagesBox.clear();
+    notifyListeners();
+  }
 }
