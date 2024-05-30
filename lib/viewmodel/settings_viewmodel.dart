@@ -1,7 +1,6 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:gemeini_chat/main.dart';
+import 'package:gemini_chat/main.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 class SettingsViewModel extends ChangeNotifier {

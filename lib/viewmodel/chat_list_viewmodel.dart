@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gemeini_chat/main.dart';
-import 'package:gemeini_chat/model/chat.dart';
+import 'package:gemini_chat/main.dart';
+import 'package:gemini_chat/model/chat.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class ChatListViewModel extends ChangeNotifier {

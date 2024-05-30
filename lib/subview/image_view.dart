@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gemeini_chat/view/chat_view.dart';
+import 'package:gemini_chat/view/chat_view.dart';
 
 class ImageView extends ConsumerWidget {
   const ImageView({super.key});

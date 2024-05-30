@@ -4,9 +4,9 @@ import 'package:desktop_window/desktop_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gemeini_chat/model/message.dart';
-import 'package:gemeini_chat/model/chat.dart';
-import 'package:gemeini_chat/view/chat_view.dart';
+import 'package:gemini_chat/model/chat.dart';
+import 'package:gemini_chat/model/message.dart';
+import 'package:gemini_chat/view/chat_view.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 late Box<Chat> chatsBox;
@@ -16,7 +16,7 @@ late Box settingsBox;
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await hiveInit();
-  await setDesktopConfig();
+  // await setDesktopConfig();
   runApp(const App());
 }
 

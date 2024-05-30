@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gemeini_chat/main.dart';
-import 'package:gemeini_chat/view/chat_view.dart';
-import 'package:gemeini_chat/viewmodel/chat_viewmodel.dart';
-import 'package:gemeini_chat/viewmodel/settings_viewmodel.dart';
+import 'package:gemini_chat/main.dart';
+import 'package:gemini_chat/view/chat_view.dart';
+import 'package:gemini_chat/viewmodel/chat_viewmodel.dart';
+import 'package:gemini_chat/viewmodel/settings_viewmodel.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 final settingsViewModelProvider =
