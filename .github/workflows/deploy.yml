@@ -37,6 +37,8 @@ jobs:
         with:
           name: web-build
           path: ./build/web
+      - name: Add CNAME file
+        run: echo ${{ secrets.CNAME }} > ./build/web/CNAME
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
