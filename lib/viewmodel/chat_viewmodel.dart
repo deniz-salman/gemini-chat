@@ -111,18 +111,9 @@ class ChatViewModel extends ChangeNotifier {
       currentChatId ??= await chatsBox.add(Chat()..createdAt = DateTime.now());
       notifyListeners();
 
-      final messageId = await messagesBox.add(Message()
-        ..prompt = prompt
-        ..promptImageId = promptImage == null ? null : promptImageId
-        ..chatId = currentChatId!
-        ..createdAt = DateTime.now());
-
       final isImageNull = promptImage == null;
-      final model = GenerativeModel(
-          model: isImageNull ? 'gemini-pro' : 'gemini-pro-vision',
-          apiKey: await settingsBox.get('apiKey'));
 
-      final List<Content> content = isImageNull
+      final chatHistory = isImageNull
           ? [
               for (var message in messageList) ...[
                 Content("user", [TextPart(message.prompt)]),
@@ -137,16 +128,30 @@ class ChatViewModel extends ChangeNotifier {
                   DataPart('image/png', await promptImage.readAsBytes()),
               ])
             ];
-      try {
-        geminiRequest =
-            CancelableOperation.fromFuture(model.generateContent(content))
-                .then((reponse) => geminiResponse = reponse);
 
+      final messageId = await messagesBox.add(Message()
+        ..prompt = prompt
+        ..promptImageId = promptImage == null ? null : promptImageId
+        ..chatId = currentChatId!
+        ..createdAt = DateTime.now());
+
+      final model = GenerativeModel(
+          model: isImageNull ? 'gemini-pro' : 'gemini-pro-vision',
+          apiKey: await settingsBox.get('apiKey'));
+
+      try {
+        geminiRequest = CancelableOperation.fromFuture(model
+                .startChat(history: chatHistory)
+                .sendMessage(Content("user", [TextPart(prompt)])))
+            .then((reponse) => geminiResponse = reponse);
+
+        updateMessages();
         notifyListeners();
         await geminiRequest.valueOrCancellation();
       } catch (e) {
         isLoading = false;
         await messagesBox.delete(chatId);
+        updateMessages();
         notifyListeners();
         log(e.toString());
         showErrorMessage(context, e.toString());
@@ -167,6 +172,7 @@ class ChatViewModel extends ChangeNotifier {
               ..createdAt = DateTime.now());
       }
       isLoading = false;
+      updateMessages();
       notifyListeners();
     }
   }

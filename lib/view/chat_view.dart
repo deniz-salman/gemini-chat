@@ -42,7 +42,8 @@ class ChatView extends ConsumerWidget {
           minLines: 1,
           focusNode: FocusNode(
             onKeyEvent: (FocusNode node, KeyEvent evt) {
-              if (!HardwareKeyboard.instance.isShiftPressed && evt.logicalKey.keyLabel == 'Enter') {
+              if (!HardwareKeyboard.instance.isShiftPressed &&
+                  evt.logicalKey.keyLabel == 'Enter') {
                 if (evt is KeyDownEvent) {
                   viewModel.sendPrompt(context);
                 }
