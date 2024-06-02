@@ -68,10 +68,11 @@ class ChatsView extends ConsumerWidget {
               text: "Settings",
               onPressed: () {
                 Scaffold.of(context).openEndDrawer();
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const Settingsview()));
+                Navigator.push(context,
+                    PageRouteBuilder(pageBuilder: (context, animation, _) {
+                  return FadeTransition(
+                      opacity: animation, child: const SettingsView());
+                }));
               }),
         ],
       ),

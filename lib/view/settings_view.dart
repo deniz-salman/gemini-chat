@@ -13,8 +13,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 final settingsViewModelProvider =
     ChangeNotifierProvider((ref) => SettingsViewModel());
 
-class Settingsview extends ConsumerWidget {
-  const Settingsview({super.key});
+class SettingsView extends ConsumerWidget {
+  const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,38 +82,39 @@ class Settingsview extends ConsumerWidget {
     );
   }
 
-  Future<dynamic> clearChatDialog(BuildContext context, SettingsViewModel settingsViewModel, ChatViewModel chatViewModel) {
+  Future<dynamic> clearChatDialog(BuildContext context,
+      SettingsViewModel settingsViewModel, ChatViewModel chatViewModel) {
     return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Clear all chat history?'),
-            content: const Text(
-                'This will delete all chat history. Are you sure you want to continue?'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  settingsViewModel.clearAllChat();
-                  chatViewModel.changeChat(null);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Chat history cleared'),
-                    ),
-                  );
-                },
-                child: const Text('Clear'),
-              ),
-            ],
-          );
-        },
-      );
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Clear all chat history?'),
+          content: const Text(
+              'This will delete all chat history. Are you sure you want to continue?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                settingsViewModel.clearAllChat();
+                chatViewModel.changeChat(null);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Chat history cleared'),
+                  ),
+                );
+              },
+              child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<dynamic> apiKeyEnterDialog(

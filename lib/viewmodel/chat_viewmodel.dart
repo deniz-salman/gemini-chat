@@ -74,8 +74,10 @@ class ChatViewModel extends ChangeNotifier {
         action: SnackBarAction(
           label: 'Set API Key',
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return const Settingsview();
+            Navigator.push(context,
+                PageRouteBuilder(pageBuilder: (context, animation, _) {
+              return FadeTransition(
+                  opacity: animation, child: const SettingsView());
             }));
           },
         ),
