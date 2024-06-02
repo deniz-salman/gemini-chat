@@ -92,7 +92,7 @@ BEGIN
             VALUE "CompanyName", "com.example" "\0"
             VALUE "FileDescription", "google_gemini_demo" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "com.c4f3rs.geminichat" "\0"
+            VALUE "InternalName", "dev.denizsalman.geminichat" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "google_gemini_demo.exe" "\0"
             VALUE "ProductName", "google_gemini_demo" "\0"
