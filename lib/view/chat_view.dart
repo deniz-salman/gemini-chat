@@ -135,9 +135,13 @@ class ChatView extends ConsumerWidget {
                                     if (item.response != null)
                                       ListTile(
                                         title: const MarkdownBlock(
-                                            data: "###  Gemini"),
-                                        subtitle: MarkdownBlock(
-                                            data: item.response ?? ""),
+                                          data: "###  Gemini",
+                                        ),
+                                        subtitle: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: MarkdownBlock(
+                                              data: item.response ?? ""),
+                                        ),
                                       ),
                                     12.verticalSpace,
                                   ],
