@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gemini_chat/subview/drawer_menu_button.dart';
 import 'package:gemini_chat/view/chat_view.dart';
 import 'package:gemini_chat/view/settings_view.dart';
 import 'package:gemini_chat/viewmodel/chat_list_viewmodel.dart';
@@ -21,10 +20,10 @@ class ChatsView extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DrawerMenuButton(
-            icon: Icons.add,
-            text: "Add New Chat",
-            onPressed: () async {
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text("Add New Chat"),
+            onTap: () async {
               if (chatViewModel.currentChatId == null) {
                 Navigator.pop(context);
                 return;
@@ -63,10 +62,10 @@ class ChatsView extends ConsumerWidget {
             ),
           ),
           const Divider(),
-          DrawerMenuButton(
-              icon: Icons.settings,
-              text: "Settings",
-              onPressed: () {
+          ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Settings"),
+              onTap: () {
                 Scaffold.of(context).openEndDrawer();
                 Navigator.push(context,
                     PageRouteBuilder(pageBuilder: (context, animation, _) {
