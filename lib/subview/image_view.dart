@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gemini_chat/view/chat_view.dart';
@@ -13,10 +14,15 @@ class ImageView extends ConsumerWidget {
       child: Stack(
         children: [
           Center(
-            child: Image.file(
-              viewModel.imageFile!,
-              fit: BoxFit.contain,
-            ),
+            child: kIsWeb
+                ? Image.network(
+                    viewModel.imageFile!.path,
+                    fit: BoxFit.contain,
+                  )
+                : Image.file(
+                    viewModel.imageFile!,
+                    fit: BoxFit.contain,
+                  ),
           ),
           IconButton(
             onPressed: viewModel.removeImage,

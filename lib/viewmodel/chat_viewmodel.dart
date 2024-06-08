@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:async/async.dart';
@@ -9,16 +10,22 @@ import 'package:gemini_chat/model/message.dart';
 import 'package:gemini_chat/view/settings_view.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 class ChatViewModel extends ChangeNotifier {
   init() async {
-    applicationDocumentsDirectory =
-        (await getApplicationDocumentsDirectory()).path;
-    imageDir = p.join(applicationDocumentsDirectory, "imgs");
-    await Directory(imageDir).create();
+    if (!kIsWeb) {
+      applicationDocumentsDirectory =
+          (await getApplicationDocumentsDirectory()).path;
+      imageDir = p.join(applicationDocumentsDirectory, "imgs");
+      await Directory(imageDir).create();
+    }
     updateMessages();
 
     messagesBox.listenable().addListener(() => updateMessages());
@@ -100,7 +107,16 @@ class ChatViewModel extends ChangeNotifier {
 
       String promptImageId = DateTime.now().microsecondsSinceEpoch.toString();
       File? promptImage = imageFile;
-      await imageFile?.copy(p.join(imageDir, promptImageId));
+
+      if (kIsWeb && promptImage != null) {
+        log('saving image to local storage');
+        html.window.localStorage[promptImageId] = base64Encode(
+            await get(Uri.parse(promptImage.path))
+                .then((value) => value.bodyBytes));
+        log('image saved to local storage');
+      } else {
+        await imageFile?.copy(p.join(imageDir, promptImageId));
+      }
 
       promptTextField.clear();
       imageFile = null;
@@ -115,21 +131,13 @@ class ChatViewModel extends ChangeNotifier {
 
       final isImageNull = promptImage == null;
 
-      final chatHistory = isImageNull
-          ? [
-              for (var message in messageList) ...[
-                Content("user", [TextPart(message.prompt)]),
-                if (message.response != null)
-                  Content("model", [TextPart(message.response)]),
-              ]
-            ]
-          : [
-              Content.multi([
-                TextPart(prompt),
-                if (!isImageNull)
-                  DataPart('image/png', await promptImage.readAsBytes()),
-              ])
-            ];
+      final chatHistory = [
+        for (var message in messageList) ...[
+          Content("user", [TextPart(message.prompt)]),
+          if (message.response != null)
+            Content("model", [TextPart(message.response)]),
+        ]
+      ];
 
       final messageId = await messagesBox.add(Message()
         ..prompt = prompt
@@ -142,9 +150,20 @@ class ChatViewModel extends ChangeNotifier {
           apiKey: await settingsBox.get('apiKey'));
 
       try {
-        geminiRequest = CancelableOperation.fromFuture(model
-                .startChat(history: chatHistory)
-                .sendMessage(Content("user", [TextPart(prompt)])))
+        geminiRequest = CancelableOperation.fromFuture(isImageNull
+                ? model
+                    .startChat(history: chatHistory)
+                    .sendMessage(Content("user", [TextPart(prompt)]))
+                : model.generateContent([
+                    Content.multi([
+                      TextPart(prompt),
+                      if (!isImageNull)
+                        DataPart(
+                            'image/png',
+                            await get(Uri.parse(promptImage.path))
+                                .then((value) => value.bodyBytes)),
+                    ])
+                  ]))
             .then((reponse) => geminiResponse = reponse);
 
         updateMessages();

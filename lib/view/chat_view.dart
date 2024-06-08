@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,9 @@ import 'package:gemini_chat/view/chat_list_view.dart';
 import 'package:gemini_chat/viewmodel/chat_viewmodel.dart';
 import 'package:path/path.dart' as p;
 import 'package:markdown_widget/markdown_widget.dart';
+import 'package:flutter/foundation.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 final chatViewModelProvider = ChangeNotifierProvider((ref) => ChatViewModel());
 
@@ -109,11 +113,20 @@ class ChatView extends ConsumerWidget {
                                             ConstrainedBox(
                                               constraints: BoxConstraints.loose(
                                                   Size(1.sw, .75.sh)),
-                                              child: Image.file(
-                                                File(p.join(viewModel.imageDir,
-                                                    item.promptImageId)),
-                                                fit: BoxFit.scaleDown,
-                                              ),
+                                              child: kIsWeb
+                                                  ? Image.memory(
+                                                      base64Decode(html.window
+                                                                  .localStorage[
+                                                              item.promptImageId] ??
+                                                          ""),
+                                                      fit: BoxFit.scaleDown,
+                                                    )
+                                                  : Image.file(
+                                                      File(p.join(
+                                                          viewModel.imageDir,
+                                                          item.promptImageId)),
+                                                      fit: BoxFit.scaleDown,
+                                                    ),
                                             ),
                                           SelectableText(item.prompt),
                                         ],
