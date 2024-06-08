@@ -42,6 +42,7 @@ class ChatViewModel extends ChangeNotifier {
   late CancelableOperation geminiRequest;
   List messageList = <Message>[];
   int? currentChatId;
+  Map<String, Uint8List> imageMemoryCacheForWeb = {};
 
   pickImage() async {
     try {
@@ -71,6 +72,15 @@ class ChatViewModel extends ChangeNotifier {
   changeChat(int? id) {
     currentChatId = id;
     updateMessages();
+    if (kIsWeb) {
+      imageMemoryCacheForWeb.clear();
+      imageMemoryCacheForWeb.addAll({
+        for (var message in messageList)
+          if (message.promptImageId != null)
+            message.promptImageId!: base64Decode(
+                html.window.localStorage[message.promptImageId] as String)
+      });
+    }
     notifyListeners();
   }
 
@@ -109,11 +119,11 @@ class ChatViewModel extends ChangeNotifier {
       File? promptImage = imageFile;
 
       if (kIsWeb && promptImage != null) {
-        log('saving image to local storage');
         html.window.localStorage[promptImageId] = base64Encode(
             await get(Uri.parse(promptImage.path))
                 .then((value) => value.bodyBytes));
-        log('image saved to local storage');
+        imageMemoryCacheForWeb[promptImageId] =
+            base64Decode(html.window.localStorage[promptImageId] as String);
       } else {
         await imageFile?.copy(p.join(imageDir, promptImageId));
       }
