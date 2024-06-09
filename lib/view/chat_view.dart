@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gemini_chat/subview/image_view.dart';
@@ -11,7 +11,6 @@ import 'package:path/path.dart' as p;
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:flutter/foundation.dart';
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 
 final chatViewModelProvider = ChangeNotifierProvider((ref) => ChatViewModel());
 
@@ -83,15 +82,18 @@ class ChatView extends ConsumerWidget {
           );
 
     return Scaffold(
-      body: Row(
+      body: ResizableContainer(
+        divider:
+            const ResizableDivider(color: Colors.black, thickness: 1, size: 1),
+        direction: Axis.horizontal,
         children: [
           if (isDesktop)
-            const Expanded(
-              flex: 2,
-              child: ChatsView(),
-            ),
-          Expanded(
-            flex: 7,
+            ResizableChild(
+                size: ResizableSize.pixels(.25.sw),
+                minSize: .15.sw,
+                maxSize: .35.sw,
+                child: const ChatsView()),
+          ResizableChild(
             child: Scaffold(
                 appBar: AppBar(
                   centerTitle: !isDesktop,
