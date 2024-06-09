@@ -22,6 +22,8 @@ class ChatView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(chatViewModelProvider);
 
+    bool isDesktop = MediaQuery.of(context).size.width > 768;
+
     var addImageButton = IconButton(
         onPressed: () {
           viewModel.pickImage();
@@ -81,83 +83,109 @@ class ChatView extends ConsumerWidget {
           );
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Gemini Chat'),
-        ),
-        drawer: const Drawer(
-          child: ChatsView(),
-        ),
-        body: Column(
-          children: [
-            Expanded(
-                child: viewModel.imageFile != null
-                    ? const ImageView()
-                    : viewModel.messageList.isEmpty
-                        ? Center(
-                            child: Text("How can I help you today?",
-                                style: Theme.of(context).textTheme.bodyLarge))
-                        : ListView(
-                            reverse: true,
-                            children: [
-                              for (final item in viewModel.messageList)
-                                Column(
-                                  children: [
-                                    ListTile(
-                                      title:
-                                          const MarkdownBlock(data: "### You"),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          if (item.promptImageId != null)
-                                            ConstrainedBox(
-                                              constraints: BoxConstraints.loose(
-                                                  Size(1.sw, .75.sh)),
-                                              child: kIsWeb
-                                                  ? Image.memory(
-                                                      base64Decode(html.window
-                                                                  .localStorage[
-                                                              item.promptImageId] ??
-                                                          ""),
-                                                      fit: BoxFit.scaleDown,
-                                                    )
-                                                  : Image.file(
-                                                      File(p.join(
-                                                          viewModel.imageDir,
-                                                          item.promptImageId)),
-                                                      fit: BoxFit.scaleDown,
-                                                    ),
-                                            ),
-                                          SelectableText(item.prompt),
-                                        ],
-                                      ),
-                                    ),
-                                    if (item.response != null)
-                                      ListTile(
-                                        title: const MarkdownBlock(
-                                          data: "###  Gemini",
-                                        ),
-                                        subtitle: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: MarkdownBlock(
-                                              data: item.response ?? ""),
-                                        ),
-                                      ),
-                                    12.verticalSpace,
-                                  ],
-                                ),
-                            ].reversed.toList())),
-            Container(
-              color: Colors.blueGrey,
-              child: Row(
-                children: [
-                  if (viewModel.imageFile == null) addImageButton,
-                  messageField,
-                  sendButton,
-                ],
-              ),
+      body: Row(
+        children: [
+          if (isDesktop)
+            const Expanded(
+              flex: 2,
+              child: ChatsView(),
             ),
-          ],
-        ));
+          Expanded(
+            flex: 7,
+            child: Scaffold(
+                appBar: AppBar(
+                  centerTitle: !isDesktop,
+                  title: const Text('Gemini Chat'),
+                ),
+                drawer: isDesktop
+                    ? null
+                    : const Drawer(
+                        child: ChatsView(),
+                      ),
+                body: Column(
+                  children: [
+                    Expanded(
+                        child: viewModel.imageFile != null
+                            ? const ImageView()
+                            : viewModel.messageList.isEmpty
+                                ? Center(
+                                    child: Text("How can I help you today?",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge))
+                                : ListView(
+                                    reverse: true,
+                                    children: [
+                                      for (final item in viewModel.messageList)
+                                        Column(
+                                          children: [
+                                            ListTile(
+                                              title: const MarkdownBlock(
+                                                  data: "### You"),
+                                              subtitle: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  if (item.promptImageId !=
+                                                      null)
+                                                    ConstrainedBox(
+                                                      constraints:
+                                                          BoxConstraints.loose(
+                                                              Size(1.sw,
+                                                                  .75.sh)),
+                                                      child: kIsWeb
+                                                          ? Image.memory(
+                                                              viewModel
+                                                                      .imageMemoryCacheForWeb[
+                                                                  item.promptImageId]!,
+                                                              fit: BoxFit
+                                                                  .scaleDown,
+                                                            )
+                                                          : Image.file(
+                                                              File(p.join(
+                                                                  viewModel
+                                                                      .imageDir,
+                                                                  item.promptImageId)),
+                                                              fit: BoxFit
+                                                                  .scaleDown,
+                                                            ),
+                                                    ),
+                                                  SelectableText(item.prompt),
+                                                ],
+                                              ),
+                                            ),
+                                            if (item.response != null)
+                                              ListTile(
+                                                title: const MarkdownBlock(
+                                                  data: "###  Gemini",
+                                                ),
+                                                subtitle: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: MarkdownBlock(
+                                                      data:
+                                                          item.response ?? ""),
+                                                ),
+                                              ),
+                                            12.verticalSpace,
+                                          ],
+                                        ),
+                                    ].reversed.toList())),
+                    Container(
+                      color: Colors.blueGrey,
+                      child: Row(
+                        children: [
+                          if (viewModel.imageFile == null) addImageButton,
+                          messageField,
+                          sendButton,
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
+          ),
+        ],
+      ),
+    );
   }
 }
