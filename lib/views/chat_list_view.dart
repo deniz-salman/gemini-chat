@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gemini_chat/view/chat_view.dart';
-import 'package:gemini_chat/view/settings_view.dart';
-import 'package:gemini_chat/viewmodel/chat_list_viewmodel.dart';
+import 'package:gemini_chat/views/chat_view.dart';
+import 'package:gemini_chat/views/settings_view.dart';
+import 'package:gemini_chat/viewmodels/chat_list_viewmodel.dart';
 
 final chatListViewModelProvider =
     ChangeNotifierProvider((ref) => ChatListViewModel());
