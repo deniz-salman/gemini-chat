@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,35 +30,39 @@ class ChatView extends ConsumerWidget {
         },
         icon: const Icon(Icons.add_photo_alternate_outlined));
 
+    viewModel.promptFocusNode.onKeyEvent = (FocusNode node, KeyEvent evt) {
+      viewModel.promptFocusNode.requestFocus();
+      if (!HardwareKeyboard.instance.isShiftPressed &&
+          evt.logicalKey.keyLabel == 'Enter') {
+        if (evt is KeyDownEvent) {
+          viewModel.sendPrompt(context);
+        }
+        return KeyEventResult.handled;
+      } else {
+        return KeyEventResult.ignored;
+      }
+    };
+
     final messageField = Expanded(
       child: TextField(
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: 'Message Gemini...',
-          ),
-          keyboardType: TextInputType.multiline,
-          controller: viewModel.promptTextField,
-          onSubmitted: (value) {
-            viewModel.sendPrompt(context);
-          },
-          onTapOutside: (PointerDownEvent evt) {
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+          hintText: 'Message Gemini...',
+        ),
+        keyboardType: TextInputType.multiline,
+        controller: viewModel.promptTextField,
+        onSubmitted: (value) {
+          viewModel.sendPrompt(context);
+        },
+        onTapOutside: (PointerDownEvent evt) {
+          if (Platform.isAndroid || Platform.isIOS) {
             FocusScope.of(context).requestFocus(FocusNode());
-          },
-          maxLines: 10,
-          minLines: 1,
-          focusNode: FocusNode(
-            onKeyEvent: (FocusNode node, KeyEvent evt) {
-              if (!HardwareKeyboard.instance.isShiftPressed &&
-                  evt.logicalKey.keyLabel == 'Enter') {
-                if (evt is KeyDownEvent) {
-                  viewModel.sendPrompt(context);
-                }
-                return KeyEventResult.handled;
-              } else {
-                return KeyEventResult.ignored;
-              }
-            },
-          )),
+          }
+        },
+        maxLines: 10,
+        minLines: 1,
+        focusNode: viewModel.promptFocusNode,
+      ),
     );
 
     final sendButton = viewModel.isLoading

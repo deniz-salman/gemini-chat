@@ -35,6 +35,7 @@ class ChatViewModel extends ChangeNotifier {
     init();
   }
   final promptTextField = TextEditingController();
+  final promptFocusNode = FocusNode();
   File? imageFile;
   bool isLoading = false;
   late String applicationDocumentsDirectory;

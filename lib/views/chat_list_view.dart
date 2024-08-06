@@ -38,6 +38,8 @@ class ChatsView extends ConsumerWidget {
                   return;
                 }
                 chatViewModel.changeChat(null);
+                chatViewModel.promptFocusNode.requestFocus();
+
                 Scaffold.of(context).openEndDrawer();
               },
             ),
