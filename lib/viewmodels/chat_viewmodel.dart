@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gemini_chat/main.dart';
 import 'package:gemini_chat/models/chat.dart';
 import 'package:gemini_chat/models/message.dart';
@@ -92,11 +93,25 @@ class ChatViewModel extends ChangeNotifier {
         action: SnackBarAction(
           label: 'Set API Key',
           onPressed: () {
-            Navigator.push(context,
-                PageRouteBuilder(pageBuilder: (context, animation, _) {
-              return FadeTransition(
-                  opacity: animation, child: const SettingsView());
-            }));
+            if (MediaQuery.of(context).size.width > 768) {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                        contentPadding: EdgeInsets.zero,
+                        content: ClipRRect(
+                          borderRadius: BorderRadius.circular(13),
+                          child: SizedBox(
+                              width: .5.sw, child: const SettingsView()),
+                        ));
+                  });
+            } else {
+              Navigator.push(context,
+                  PageRouteBuilder(pageBuilder: (context, animation, _) {
+                return FadeTransition(
+                    opacity: animation, child: const SettingsView());
+              }));
+            }
           },
         ),
       );

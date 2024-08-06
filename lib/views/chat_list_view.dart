@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gemini_chat/views/chat_view.dart';
 import 'package:gemini_chat/views/settings_view.dart';
 import 'package:gemini_chat/viewmodels/chat_list_viewmodel.dart';
@@ -78,11 +79,25 @@ class ChatsView extends ConsumerWidget {
                 title: const Text("Settings"),
                 onTap: () {
                   Scaffold.of(context).openEndDrawer();
-                  Navigator.push(context,
-                      PageRouteBuilder(pageBuilder: (context, animation, _) {
-                    return FadeTransition(
-                        opacity: animation, child: const SettingsView());
-                  }));
+                  if (MediaQuery.of(context).size.width > 768) {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                              contentPadding: EdgeInsets.zero,
+                              content: ClipRRect(
+                                borderRadius: BorderRadius.circular(13),
+                                child: SizedBox(
+                                    width: .5.sw, child: const SettingsView()),
+                              ));
+                        });
+                  } else {
+                    Navigator.push(context,
+                        PageRouteBuilder(pageBuilder: (context, animation, _) {
+                      return FadeTransition(
+                          opacity: animation, child: const SettingsView());
+                    }));
+                  }
                 }),
           ],
         ),
