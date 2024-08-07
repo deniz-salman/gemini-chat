@@ -172,8 +172,7 @@ class ChatViewModel extends ChangeNotifier {
         ..createdAt = DateTime.now());
 
       final model = GenerativeModel(
-          model: isImageNull ? 'gemini-pro' : 'gemini-pro-vision',
-          apiKey: await settingsBox.get('apiKey'));
+          model: 'gemini-1.5-flash', apiKey: await settingsBox.get('apiKey'));
 
       try {
         geminiRequest = CancelableOperation.fromFuture(isImageNull
